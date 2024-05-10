@@ -1,0 +1,193 @@
+proc sql;
+%if %sysfunc(exist(WORK.rna_seq_MPSIIIB)) %then %do;
+    drop table WORK.rna_seq_MPSIIIB;
+%end;
+%if %sysfunc(exist(WORK.rna_seq_MPSIIIB,VIEW)) %then %do;
+    drop view WORK.rna_seq_MPSIIIB;
+%end;
+quit;
+
+
+
+FILENAME REFFILE FILESRVC FOLDERPATH='/path/to/Normalized_Counts_MPSIIIB_transformed.csv'  FILENAME='Normalized_Counts_MPSIIIB_transformed.csv';
+
+PROC IMPORT DATAFILE=REFFILE
+	DBMS=CSV
+	OUT=WORK.rna_seq_MPSIIIB;
+	GETNAMES=YES;
+RUN;
+
+PROC CONTENTS DATA=WORK.rna_seq_MPSIIIB; RUN;
+
+/* sort by gene id*/
+  PROC SORT DATA = rna_seq_MPSIIIB OUT = WORK.MPSIIIB_sorted;
+BY FlyBase_ID;
+
+
+
+/*Comparing KO with WG2*/
+PROC SQL; 
+CREATE TABLE WORK.rna_seq_KO AS
+Select *
+from WORK.MPSIIIB_sorted
+where Genotype IN ('WG2','KO');
+run;
+
+/* format output tables*/
+  PROC template;
+edit Stat.GLM.ProbF; format=E12.; end;
+run;
+PROC template;
+edit Stat.GLM.LSMSlice; format=E12.; end;
+run;
+PROC template;
+edit Stat.GLM.Contrasts; format=E12.; end;
+run;
+PROC template;
+edit Stat.GLM.Tests; format=E12.; end;
+run;
+proc template;
+edit Stat.Mixed.Tests3; parent = Stat.Mixed.FTests; end;
+run;
+
+
+/*no html output or note writing to decrease run time*/
+  ODS RESULTS OFF;
+options nonotes;
+
+/*Naming output datasets*/
+  ods noproctitle;
+ods graphics / imagemap=off;
+ods output FitStatistics=FS_MPSIIIB_KO;
+ods output LSMeans=LSMeans_MPSIIIB_KO;
+ods output ClassLevels= ClassLevels_MPSIIIB_KO;
+ods output NObs= NObs_MPSIIIB_KO;
+ods output OverallANOVA= OverallANOVA_MPSIIIB_KO;
+ods output ModelANOVA= ModelANOVA_MPSIIIB_KO;
+ods output SlicedANOVA= SlicedANOVA_MPSIIIB_KO;
+ods output Contrasts=Contrasts_MPSIIIB_KO;
+
+
+/*Defining and running the model for each gene (geneid)*/
+  proc glm data=WORK.rna_seq_KO plots=none;
+class Genotype Sex Age;
+model norm_counts = Genotype|Sex|Age;
+by Flybase_id;
+contrast 'KO - WG2' Genotype 1 -1;
+contrast 'KO - WG2 Female' Genotype 1 -1 Genotype*Sex 1 0 -1 0;
+contrast 'KO- WG2 Male' Genotype 1 -1 Genotype*Sex 0 1 0 -1;
+contrast 'KO- WG2 Female week0' Genotype 1 -1 Genotype*Sex 1 0 -1 0 Genotype*Sex*Age 1 0 0 0 -1 0 0 0;
+contrast 'KO- WG2 Female week3' Genotype 1 -1 Genotype*Sex 1 0 -1 0 Genotype*Sex*Age 0 1 0 0 0 -1 0 0;
+contrast 'KO- WG2 Male week0' Genotype 1 -1 Genotype*Sex 0 1 0 -1 Genotype*Sex*Age 0 0 1 0 0 0 -1 0;
+contrast 'KO- WG2 Male week3' Genotype 1 -1 Genotype*Sex 0 1 0 -1 Genotype*Sex*Age 0 0 0 1 0 0 0 -1;
+run;
+
+
+/*Comparing Y160C with WG2*/
+PROC SQL; 
+CREATE TABLE WORK.rna_seq_Y160C AS
+Select *
+from WORK.MPSIIIB_sorted
+where Genotype IN ('WG2','Y160C');
+run;
+
+/* format output tables*/
+  PROC template;
+edit Stat.GLM.ProbF; format=E12.; end;
+run;
+PROC template;
+edit Stat.GLM.LSMSlice; format=E12.; end;
+run;
+PROC template;
+edit Stat.GLM.Contrasts; format=E12.; end;
+run;
+PROC template;
+edit Stat.GLM.Tests; format=E12.; end;
+run;
+proc template;
+edit Stat.Mixed.Tests3; parent = Stat.Mixed.FTests; end;
+run;
+
+
+/*no html output or note writing to decrease run time*/
+  ODS RESULTS OFF;
+options nonotes;
+
+/*Naming output datasets*/
+  ods noproctitle;
+ods graphics / imagemap=off;
+ods output FitStatistics=FS_MPSIIIB_Y160C;
+ods output LSMeans=LSMeans_MPSIIIB_Y160C;
+ods output ClassLevels= ClassLevels_MPSIIIB_Y160C;
+ods output NObs= NObs_MPSIIIB_Y160C;
+ods output OverallANOVA= OverallANOVA_MPSIIIB_Y160C;
+ods output ModelANOVA= ModelANOVA_MPSIIIB_Y160C;
+ods output SlicedANOVA= SlicedANOVA_MPSIIIB_Y160C;
+ods output Contrasts=Contrasts_MPSIIIB_Y160C;
+
+
+/*Defining and running the model for each gene (geneid)*/
+  proc glm data=WORK.rna_seq_Y160C plots=none;
+class Genotype Sex Age;
+model norm_counts = Genotype|Sex|Age;
+by Flybase_id;
+contrast 'Y160C - WG2' Genotype -1 1;
+contrast 'Y160C - WG2 Female' Genotype -1 1 Genotype*Sex -1 0 1 0;
+contrast 'Y160C - WG2 Male' Genotype -1 1 Genotype*Sex 0 -1 0 1;
+contrast 'Y160C - WG2 Female week0' Genotype-1 1 Genotype*Sex -1 0 1 0 Genotype*Sex*Age -1 0 0 0 1 0 0 0;
+contrast 'Y160C - WG2 Female week3' Genotype -1 1 Genotype*Sex -1 0 1 0 Genotype*Sex*Age 0 -1 0 0 0 1 0 0;
+contrast 'Y160C - WG2 Male week0' Genotype -1 1 Genotype*Sex 0 -1 0 1 Genotype*Sex*Age 0 0 -1 0 0 0 1 0;
+contrast 'Y160C - WG2 Male week3' Genotype -1 1 Genotype*Sex -0 -1 0 1 Genotype*Sex*Age 0 0 0 -1 0 0 0 1;
+run;
+
+
+/*Comparing W422X with WG2*/
+PROC SQL;
+CREATE TABLE WORK.rna_seq_W422X AS
+Select *
+from WORK.MPSIIIB_sorted
+where Genotype IN ('WG2','W422X');
+run;
+/* format output tables*/
+  PROC template;
+edit Stat.GLM.ProbF; format=E12.; end;
+run;
+PROC template;
+edit Stat.GLM.LSMSlice; format=E12.; end;
+run;
+PROC template;
+edit Stat.GLM.Contrasts; format=E12.; end;
+run;
+PROC template;
+edit Stat.GLM.Tests; format=E12.; end;
+run;
+proc template;
+edit Stat.Mixed.Tests3; parent = Stat.Mixed.FTests; end;
+run;
+/*no html output or note writing to decrease run time*/
+  ODS RESULTS OFF;
+options nonotes;
+/*Naming output datasets*/
+  ods noproctitle;
+ods graphics / imagemap=off;
+ods output FitStatistics=FS_MPSIIIB_W422X;
+ods output LSMeans=LSMeans_MPSIIIB_W422X;
+ods output ClassLevels= ClassLevels_MPSIIIB_W422X;
+ods output NObs= NObs_MPSIIIB_W422X;
+ods output OverallANOVA= OverallANOVA_MPSIIIB_W422X;
+ods output ModelANOVA= ModelANOVA_MPSIIIB_W422X;
+ods output SlicedANOVA= SlicedANOVA_MPSIIIB_W422X;
+ods output Contrasts=Contrasts_MPSIIIB_W422X;
+/*Defining and running the model for each gene (geneid)*/
+  proc glm data=WORK.rna_seq_W422X plots=none;
+class Genotype Sex Age;
+model norm_counts = Genotype|Sex|Age;
+by Flybase_id;
+contrast 'W422X - WG2' Genotype 1 -1;
+contrast 'W422X - WG2 Female' Genotype 1 -1 Genotype*Sex 1 0 -1 0;
+contrast 'W422X - WG2 Male' Genotype 1 -1 Genotype*Sex 0 1 0 -1;
+contrast 'W422X - WG2 Female week0' Genotype 1 -1 Genotype*Sex 1 0 -1 0 Genotype*Sex*Age 1 0 0 0 -1 0 0 0;
+contrast 'W422X - WG2 Female week3' Genotype 1 -1 Genotype*Sex 1 0 -1 0 Genotype*Sex*Age 0 1 0 0 0 -1 0 0;
+contrast 'W422X - WG2 Male week0' Genotype 1 -1 Genotype*Sex 0 1 0 -1 Genotype*Sex*Age 0 0 1 0 0 0 -1 0;
+contrast 'W422X - WG2 Male week3' Genotype 1 -1 Genotype*Sex 0 1 0 -1 Genotype*Sex*Age 0 0 0 1 0 0 0 -1;
+run;

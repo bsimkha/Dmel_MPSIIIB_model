@@ -1,0 +1,267 @@
+proc sql;
+%if %sysfunc(exist(WORK.total_locomotor)) %then %do;
+    drop table WORK.total_locomotor;
+%end;
+%if %sysfunc(exist(WORK.total_locomotor,VIEW)) %then %do;
+    drop view WORK.total_locomotor;
+%end;
+quit;
+
+
+
+FILENAME REFFILE FILESRVC FOLDERPATH='path/to/Total_locomotor_activity.csv'  FILENAME='Total_locomotor_activity.csv';
+
+PROC IMPORT DATAFILE=REFFILE
+	DBMS=CSV
+	OUT=WORK.total_locomotor;
+	GETNAMES=YES;
+RUN;
+
+PROC CONTENTS DATA=WORK.total_locomotor; RUN;
+
+ods noproctitle;
+ods graphics / imagemap=on;
+
+PROC SQL; 
+CREATE TABLE WORK.total_locomotorKO AS
+Select *
+from WORK.total_locomotor
+where Genotype IN ('WG2','KO');
+run;
+
+PROC SQL; 
+CREATE TABLE WORK.total_locomotorY160C AS
+Select *
+from WORK.total_locomotor
+where Genotype IN ('WG2','Y160C');
+run;
+
+PROC SQL; 
+CREATE TABLE WORK.total_locomotorW422X AS
+Select *
+from WORK.total_locomotor
+where Genotype IN ('WG2','W422X');
+run;
+
+
+/* full Model KO */
+
+ods noproctitle;
+ods graphics / imagemap=on;
+
+proc mixed data=WORK.total_locomotorKO method=type3 
+		plots(maxpoints=none)=(residualPanel) alpha=0.05;
+	class Genotype Sex Age Rep;
+	model Activity=Genotype Sex Age Genotype*Sex Genotype*Age Sex*Age 
+		Genotype*Sex*Age /;
+	random Rep(Genotype*Sex*Age) /;
+run;
+
+/* By Sex KO*/
+
+ods noproctitle;
+ods graphics / imagemap=on;
+
+proc sort data=WORK.total_locomotorKO out=Work._tempsorted_;
+	by Sex;
+run;
+
+proc mixed data=Work._tempsorted_ method=type3 
+		plots(maxpoints=none)=(residualPanel) alpha=0.05;
+	class Genotype Age Rep;
+	model Activity=Genotype Age Genotype*Age /;
+	random Rep(Genotype*Age) /;
+	by Sex;
+run;
+
+proc delete data=Work._tempsorted_;
+run;
+
+/* By Age KO*/
+
+ods noproctitle;
+ods graphics / imagemap=on;
+
+proc sort data=WORK.total_locomotorKO out=Work._tempsorted_;
+	by Age;
+run;
+
+proc mixed data=Work._tempsorted_ method=type3 
+		plots(maxpoints=none)=(residualPanel) alpha=0.05;
+	class Genotype Sex Rep;
+	model Activity=Genotype Sex Genotype*Sex /;
+	random Rep(Genotype*Sex) /;
+	by Age;
+run;
+
+proc delete data=Work._tempsorted_;
+run;
+
+/* By Sex and Age KO*/
+
+ods noproctitle;
+ods graphics / imagemap=on;
+
+proc sort data=WORK.total_locomotorKO out=Work._tempsorted_;
+	by Age Sex;
+run;
+
+proc mixed data=Work._tempsorted_ method=type3 
+		plots(maxpoints=none)=(residualPanel) alpha=0.05;
+	class Genotype Rep;
+	model Activity=Genotype /;
+	random Rep(Genotype) /;
+	by Age Sex;
+run;
+
+/* full Model Y160C */
+
+ods noproctitle;
+ods graphics / imagemap=on;
+
+proc mixed data=WORK.total_locomotorY160C method=type3 
+		plots(maxpoints=none)=(residualPanel) alpha=0.05;
+	class Genotype Sex Age Rep;
+	model Activity=Genotype Sex Age Genotype*Sex Genotype*Age Sex*Age 
+		Genotype*Sex*Age /;
+	random Rep(Genotype*Sex*Age) /;
+run;
+
+/* By Sex Y160C*/
+
+ods noproctitle;
+ods graphics / imagemap=on;
+
+proc sort data=WORK.total_locomotorY160C out=Work._tempsorted_;
+	by Sex;
+run;
+
+proc mixed data=Work._tempsorted_ method=type3 
+		plots(maxpoints=none)=(residualPanel) alpha=0.05;
+	class Genotype Age Rep;
+	model Activity=Genotype Age Genotype*Age /;
+	random Rep(Genotype*Age) /;
+	by Sex;
+run;
+
+proc delete data=Work._tempsorted_;
+run;
+
+/* By Age Y160C*/
+
+ods noproctitle;
+ods graphics / imagemap=on;
+
+proc sort data=WORK.total_locomotorY160C out=Work._tempsorted_;
+	by Age;
+run;
+
+proc mixed data=Work._tempsorted_ method=type3 
+		plots(maxpoints=none)=(residualPanel) alpha=0.05;
+	class Genotype Sex Rep;
+	model Activity=Genotype Sex Genotype*Sex /;
+	random Rep(Genotype*Sex) /;
+	by Age;
+run;
+
+proc delete data=Work._tempsorted_;
+run;
+
+/* By Sex and Age Y160C*/
+
+ods noproctitle;
+ods graphics / imagemap=on;
+
+proc sort data=WORK.total_locomotorY160C out=Work._tempsorted_;
+	by Age Sex;
+run;
+
+proc mixed data=Work._tempsorted_ method=type3 
+		plots(maxpoints=none)=(residualPanel) alpha=0.05;
+	class Genotype Rep;
+	model Activity=Genotype /;
+	random Rep(Genotype) /;
+	by Age Sex;
+run;
+
+/* full Model W422X */
+
+ods noproctitle;
+ods graphics / imagemap=on;
+
+proc mixed data=WORK.total_locomotorW422X method=type3 
+		plots(maxpoints=none)=(residualPanel) alpha=0.05;
+	class Genotype Sex Age Rep;
+	model Activity=Genotype Sex Age Genotype*Sex Genotype*Age Sex*Age 
+		Genotype*Sex*Age /;
+	random Rep(Genotype*Sex*Age) /;
+run;
+
+/* By Sex W422X*/
+
+ods noproctitle;
+ods graphics / imagemap=on;
+
+proc sort data=WORK.total_locomotorW422X out=Work._tempsorted_;
+	by Sex;
+run;
+
+proc mixed data=Work._tempsorted_ method=type3 
+		plots(maxpoints=none)=(residualPanel) alpha=0.05;
+	class Genotype Age Rep;
+	model Activity=Genotype Age Genotype*Age /;
+	random Rep(Genotype*Age) /;
+	by Sex;
+run;
+
+proc delete data=Work._tempsorted_;
+run;
+
+/* By Age W422X*/
+
+ods noproctitle;
+ods graphics / imagemap=on;
+
+proc sort data=WORK.total_locomotorW422X out=Work._tempsorted_;
+	by Age;
+run;
+
+proc mixed data=Work._tempsorted_ method=type3 
+		plots(maxpoints=none)=(residualPanel) alpha=0.05;
+	class Genotype Sex Rep;
+	model Activity=Genotype Sex Genotype*Sex /;
+	random Rep(Genotype*Sex) /;
+	by Age;
+run;
+
+proc delete data=Work._tempsorted_;
+run;
+
+/* By Sex and Age W422X*/
+
+ods noproctitle;
+ods graphics / imagemap=on;
+
+proc sort data=WORK.total_locomotorW422X out=Work._tempsorted_;
+	by Age Sex;
+run;
+
+proc mixed data=Work._tempsorted_ method=type3 
+		plots(maxpoints=none)=(residualPanel) alpha=0.05;
+	class Genotype Rep;
+	model Activity=Genotype /;
+	random Rep(Genotype) /;
+	by Age Sex;
+run;
+
+proc delete data=Work._tempsorted_;
+run;
+
+proc delete data=Work.total_locomotorKO;
+run;
+
+proc delete data=Work.total_locomotorY160C;
+run;
+
+proc delete data=Work.total_locomotorW422X;
+run;

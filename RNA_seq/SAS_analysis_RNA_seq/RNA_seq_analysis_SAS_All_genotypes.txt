@@ -1,0 +1,66 @@
+proc sql;
+%if %sysfunc(exist(WORK.rna_seq_MPSIIIB)) %then %do;
+    drop table WORK.rna_seq_MPSIIIB;
+%end;
+%if %sysfunc(exist(WORK.rna_seq_MPSIIIB,VIEW)) %then %do;
+    drop view WORK.rna_seq_MPSIIIB;
+%end;
+quit;
+
+FILENAME REFFILE FILESRVC FOLDERPATH='path/to/Normalized_Counts_MPSIIIB_transformed.csv'  FILENAME='Normalized_Counts_MPSIIIB_transformed.csv';
+
+PROC IMPORT DATAFILE=REFFILE
+	DBMS=CSV
+	OUT=WORK.rna_seq_MPSIIIB;
+	GETNAMES=YES;
+RUN;
+
+PROC CONTENTS DATA=WORK.rna_seq_MPSIIIB; RUN;
+
+
+/* sort by gene id*/
+  PROC SORT DATA = rna_seq_MPSIIIB OUT = WORK.MPSIIIB_sorted;
+BY FlyBase_ID;
+
+/* format output tables*/
+  PROC template;
+edit Stat.GLM.ProbF; format=E12.; end;
+run;
+PROC template;
+edit Stat.GLM.LSMSlice; format=E12.; end;
+run;
+PROC template;
+edit Stat.GLM.Contrasts; format=E12.; end;
+run;
+PROC template;
+edit Stat.GLM.Tests; format=E12.; end;
+run;
+proc template;
+edit Stat.Mixed.Tests3; parent = Stat.Mixed.FTests; end;
+run;
+
+
+/*no html output or note writing to decrease run time*/
+  ODS RESULTS OFF;
+options nonotes;
+
+/*Naming output datasets*/
+  ods noproctitle;
+ods graphics / imagemap=off;
+ods output FitStatistics=FS_MPSIIIB;
+ods output LSMeans=LSMeans_MPSIIIB;
+ods output ClassLevels= ClassLevels_MPSIIIB;
+ods output NObs= NObs_MPSIIIB;
+ods output OverallANOVA= OverallANOVA_MPSIIIB;
+ods output ModelANOVA= ModelANOVA_MPSIIIB;
+ods output SlicedANOVA= SlicedANOVA_MPSIIIB;
+ods output Contrasts=Contrasts_MPSIIIB;
+
+
+/*Defining and running the model for each gene (geneid)*/
+  proc glm data=WORK.MPSIIIB_sorted plots=none;
+class Genotype Sex Age;
+model norm_counts = Genotype|Sex|Age;
+by Flybase_id;
+lsmeans Genotype;
+run;

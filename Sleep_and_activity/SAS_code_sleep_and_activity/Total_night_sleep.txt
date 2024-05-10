@@ -1,0 +1,267 @@
+proc sql;
+%if %sysfunc(exist(WORK.night_sleep)) %then %do;
+    drop table WORK.night_sleep;
+%end;
+%if %sysfunc(exist(WORK.night_sleep,VIEW)) %then %do;
+    drop view WORK.night_sleep;
+%end;
+quit;
+
+
+
+FILENAME REFFILE FILESRVC FOLDERPATH='path/to/Total_night_sleep.csv'  FILENAME='Total_night_sleep.csv';
+
+PROC IMPORT DATAFILE=REFFILE
+	DBMS=CSV
+	OUT=WORK.night_sleep;
+	GETNAMES=YES;
+RUN;
+
+PROC CONTENTS DATA=WORK.night_sleep; RUN;
+
+ods noproctitle;
+ods graphics / imagemap=on;
+
+PROC SQL; 
+CREATE TABLE WORK.night_sleepKO AS
+Select *
+from WORK.night_sleep
+where Genotype IN ('WG2','KO');
+run;
+
+PROC SQL; 
+CREATE TABLE WORK.night_sleepY160C AS
+Select *
+from WORK.night_sleep
+where Genotype IN ('WG2','Y160C');
+run;
+
+PROC SQL; 
+CREATE TABLE WORK.night_sleepW422X AS
+Select *
+from WORK.night_sleep
+where Genotype IN ('WG2','W422X');
+run;
+
+
+/* full Model KO */
+
+ods noproctitle;
+ods graphics / imagemap=on;
+
+proc mixed data=WORK.night_sleepKO method=type3 
+		plots(maxpoints=none)=(residualPanel) alpha=0.05;
+	class Genotype Sex Age Rep;
+	model mean_sleep_per_ind=Genotype Sex Age Genotype*Sex Genotype*Age Sex*Age 
+		Genotype*Sex*Age /;
+	random Rep(Genotype*Sex*Age) /;
+run;
+
+/* By Sex KO*/
+
+ods noproctitle;
+ods graphics / imagemap=on;
+
+proc sort data=WORK.night_sleepKO out=Work._tempsorted_;
+	by Sex;
+run;
+
+proc mixed data=Work._tempsorted_ method=type3 
+		plots(maxpoints=none)=(residualPanel) alpha=0.05;
+	class Genotype Age Rep;
+	model mean_sleep_per_ind=Genotype Age Genotype*Age /;
+	random Rep(Genotype*Age) /;
+	by Sex;
+run;
+
+proc delete data=Work._tempsorted_;
+run;
+
+/* By Age KO*/
+
+ods noproctitle;
+ods graphics / imagemap=on;
+
+proc sort data=WORK.night_sleepKO out=Work._tempsorted_;
+	by Age;
+run;
+
+proc mixed data=Work._tempsorted_ method=type3 
+		plots(maxpoints=none)=(residualPanel) alpha=0.05;
+	class Genotype Sex Rep;
+	model mean_sleep_per_ind=Genotype Sex Genotype*Sex /;
+	random Rep(Genotype*Sex) /;
+	by Age;
+run;
+
+proc delete data=Work._tempsorted_;
+run;
+
+/* By Sex and Age KO*/
+
+ods noproctitle;
+ods graphics / imagemap=on;
+
+proc sort data=WORK.night_sleepKO out=Work._tempsorted_;
+	by Age Sex;
+run;
+
+proc mixed data=Work._tempsorted_ method=type3 
+		plots(maxpoints=none)=(residualPanel) alpha=0.05;
+	class Genotype Rep;
+	model mean_sleep_per_ind=Genotype /;
+	random Rep(Genotype) /;
+	by Age Sex;
+run;
+
+/* full Model Y160C */
+
+ods noproctitle;
+ods graphics / imagemap=on;
+
+proc mixed data=WORK.night_sleepY160C method=type3 
+		plots(maxpoints=none)=(residualPanel) alpha=0.05;
+	class Genotype Sex Age Rep;
+	model mean_sleep_per_ind=Genotype Sex Age Genotype*Sex Genotype*Age Sex*Age 
+		Genotype*Sex*Age /;
+	random Rep(Genotype*Sex*Age) /;
+run;
+
+/* By Sex Y160C*/
+
+ods noproctitle;
+ods graphics / imagemap=on;
+
+proc sort data=WORK.night_sleepY160C out=Work._tempsorted_;
+	by Sex;
+run;
+
+proc mixed data=Work._tempsorted_ method=type3 
+		plots(maxpoints=none)=(residualPanel) alpha=0.05;
+	class Genotype Age Rep;
+	model mean_sleep_per_ind=Genotype Age Genotype*Age /;
+	random Rep(Genotype*Age) /;
+	by Sex;
+run;
+
+proc delete data=Work._tempsorted_;
+run;
+
+/* By Age Y160C*/
+
+ods noproctitle;
+ods graphics / imagemap=on;
+
+proc sort data=WORK.night_sleepY160C out=Work._tempsorted_;
+	by Age;
+run;
+
+proc mixed data=Work._tempsorted_ method=type3 
+		plots(maxpoints=none)=(residualPanel) alpha=0.05;
+	class Genotype Sex Rep;
+	model mean_sleep_per_ind=Genotype Sex Genotype*Sex /;
+	random Rep(Genotype*Sex) /;
+	by Age;
+run;
+
+proc delete data=Work._tempsorted_;
+run;
+
+/* By Sex and Age Y160C*/
+
+ods noproctitle;
+ods graphics / imagemap=on;
+
+proc sort data=WORK.night_sleepY160C out=Work._tempsorted_;
+	by Age Sex;
+run;
+
+proc mixed data=Work._tempsorted_ method=type3 
+		plots(maxpoints=none)=(residualPanel) alpha=0.05;
+	class Genotype Rep;
+	model mean_sleep_per_ind=Genotype /;
+	random Rep(Genotype) /;
+	by Age Sex;
+run;
+
+/* full Model W422X */
+
+ods noproctitle;
+ods graphics / imagemap=on;
+
+proc mixed data=WORK.night_sleepW422X method=type3 
+		plots(maxpoints=none)=(residualPanel) alpha=0.05;
+	class Genotype Sex Age Rep;
+	model mean_sleep_per_ind=Genotype Sex Age Genotype*Sex Genotype*Age Sex*Age 
+		Genotype*Sex*Age /;
+	random Rep(Genotype*Sex*Age) /;
+run;
+
+/* By Sex W422X*/
+
+ods noproctitle;
+ods graphics / imagemap=on;
+
+proc sort data=WORK.night_sleepW422X out=Work._tempsorted_;
+	by Sex;
+run;
+
+proc mixed data=Work._tempsorted_ method=type3 
+		plots(maxpoints=none)=(residualPanel) alpha=0.05;
+	class Genotype Age Rep;
+	model mean_sleep_per_ind=Genotype Age Genotype*Age /;
+	random Rep(Genotype*Age) /;
+	by Sex;
+run;
+
+proc delete data=Work._tempsorted_;
+run;
+
+/* By Age W422X*/
+
+ods noproctitle;
+ods graphics / imagemap=on;
+
+proc sort data=WORK.night_sleepW422X out=Work._tempsorted_;
+	by Age;
+run;
+
+proc mixed data=Work._tempsorted_ method=type3 
+		plots(maxpoints=none)=(residualPanel) alpha=0.05;
+	class Genotype Sex Rep;
+	model mean_sleep_per_ind=Genotype Sex Genotype*Sex /;
+	random Rep(Genotype*Sex) /;
+	by Age;
+run;
+
+proc delete data=Work._tempsorted_;
+run;
+
+/* By Sex and Age W422X*/
+
+ods noproctitle;
+ods graphics / imagemap=on;
+
+proc sort data=WORK.night_sleepW422X out=Work._tempsorted_;
+	by Age Sex;
+run;
+
+proc mixed data=Work._tempsorted_ method=type3 
+		plots(maxpoints=none)=(residualPanel) alpha=0.05;
+	class Genotype Rep;
+	model mean_sleep_per_ind=Genotype /;
+	random Rep(Genotype) /;
+	by Age Sex;
+run;
+
+proc delete data=Work._tempsorted_;
+run;
+
+proc delete data=Work.night_sleepKO;
+run;
+
+proc delete data=Work.night_sleepY160C;
+run;
+
+proc delete data=Work.night_sleepW422X;
+run;
