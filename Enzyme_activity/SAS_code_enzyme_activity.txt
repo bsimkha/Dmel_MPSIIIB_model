@@ -1,0 +1,151 @@
+proc sql;
+%if %sysfunc(exist(WORK.enzyme_activity)) %then %do;
+    drop table WORK.enzyme_activity;
+%end;
+%if %sysfunc(exist(WORK.enzyme_activity,VIEW)) %then %do;
+    drop view WORK.enzyme_activity;
+%end;
+quit;
+
+
+
+FILENAME REFFILE FILESRVC FOLDERPATH='/Users/bsimkha/MPS IIIB/Enzyme_activity'  FILENAME='Enzyme_activity_measurements.csv';
+
+PROC IMPORT DATAFILE=REFFILE
+	DBMS=CSV
+	OUT=WORK.enzyme_activity;
+	GETNAMES=YES;
+RUN;
+
+PROC CONTENTS DATA=WORK.enzyme_activity; RUN;
+
+ods noproctitle;
+ods graphics / imagemap=on;
+
+proc sort data=WORK.enzyme_activity out=Work.TempDataSorted;
+	by Sex Age;
+run;
+
+PROC SQL; 
+CREATE TABLE WORK.enzyme_activityKO AS
+Select *
+from WORK.TempDataSorted
+where Genotype IN ('WG2','KO');
+
+PROC SQL; 
+CREATE TABLE WORK.enzyme_activityY160C AS
+Select *
+from WORK.TempDataSorted
+where Genotype IN ('WG2','Y160C');
+
+PROC SQL; 
+CREATE TABLE WORK.enzyme_activityW422X AS
+Select *
+from WORK.TempDataSorted
+where Genotype IN ('WG2','W422X');
+
+/**Full model**/
+ods noproctitle;
+ods graphics / imagemap=on;
+
+proc mixed data=WORK.enzyme_activityKO method=type3 
+		plots=(residualPanel) alpha=0.05;
+	class Genotype Sex Age;
+	model nmol_per_hr_per_mg=Genotype Sex Age Genotype*Sex Genotype*Age Sex*Age Genotype*Sex*Age /;
+run;
+
+/**by sex**/
+ods noproctitle;
+ods graphics / imagemap=on;
+
+proc mixed data=Work.enzyme_activityKO method=type3 plots=(residualPanel) 
+		alpha=0.05;
+	class Genotype Age;
+	model nmol_per_hr_per_mg=Genotype Age Genotype*Age /;
+	by Sex;
+run;
+
+
+/**by sex by age*/
+proc mixed data=Work.enzyme_activityKO method=type3 plots=(residualPanel) 
+		alpha=0.05;
+	class Genotype;
+	model nmol_per_hr_per_mg=Genotype /;
+	by Sex Age;
+run;
+
+
+
+
+/**Full model**/
+ods noproctitle;
+ods graphics / imagemap=on;
+
+proc mixed data=WORK.enzyme_activityY160C method=type3 
+		plots=(residualPanel) alpha=0.05;
+	class Genotype Sex Age;
+	model nmol_per_hr_per_mg=Genotype Sex Age Genotype*Sex Genotype*Age Sex*Age Genotype*Sex*Age /;
+run;
+
+/**by sex**/
+ods noproctitle;
+ods graphics / imagemap=on;
+
+proc mixed data=Work.enzyme_activityY160C method=type3 plots=(residualPanel) 
+		alpha=0.05;
+	class Genotype Age;
+	model nmol_per_hr_per_mg=Genotype Age Genotype*Age /;
+	by Sex;
+run;
+
+/**by sex by age*/
+proc mixed data=Work.enzyme_activityY160C method=type3 plots=(residualPanel) 
+		alpha=0.05;
+	class Genotype;
+	model nmol_per_hr_per_mg=Genotype/;
+	by Sex Age;
+run;
+
+
+
+/**Full model**/
+ods noproctitle;
+ods graphics / imagemap=on;
+
+proc mixed data=WORK.enzyme_activityW422X method=type3 
+		plots=(residualPanel) alpha=0.05;
+	class Genotype Sex Age;
+	model nmol_per_hr_per_mg=Genotype Sex Age Genotype*Sex Genotype*Age Sex*Age Genotype*Sex*Age /;
+run;
+
+/**by sex**/
+ods noproctitle;
+ods graphics / imagemap=on;
+
+proc mixed data=Work.enzyme_activityW422X method=type3 plots=(residualPanel) 
+		alpha=0.05;
+	class Genotype Age;
+	model nmol_per_hr_per_mg=Genotype Age Genotype*Age/;
+	by Sex;
+run;
+
+
+/**by sex by age*/
+proc mixed data=Work.enzyme_activityW422X method=type3 plots=(residualPanel) 
+		alpha=0.05;
+	class Genotype;
+	model nmol_per_hr_per_mg=Genotype /;
+	by Sex Age;
+run;
+
+proc delete data=Work.enzyme_activityKO;
+run;
+
+proc delete data=Work.enzyme_activityY160C;
+run;
+
+proc delete data=Work.enzyme_activityW422X;
+run;
+
+proc delete data=Work.TempDataSorted;
+run;

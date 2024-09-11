@@ -1,4 +1,4 @@
-setwd("C:/Users/CHG_23/Desktop/Sanfilippo B/1) Characterization Assays/RNA-seq/2) Median filtering and Normalization/Data")
+setwd("path/to/working/directory")
 library(ggplot2)
 library(dplyr)
 library(edgeR)
