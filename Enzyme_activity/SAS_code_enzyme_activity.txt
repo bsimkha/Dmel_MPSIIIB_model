@@ -8,7 +8,6 @@ proc sql;
 quit;
 
 
-
 FILENAME REFFILE FILESRVC FOLDERPATH='/Users/bsimkha/MPS IIIB/Enzyme_activity'  FILENAME='Enzyme_activity_measurements.csv';
 
 PROC IMPORT DATAFILE=REFFILE
