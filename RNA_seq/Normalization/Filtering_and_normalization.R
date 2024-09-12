@@ -26,7 +26,7 @@ median_filt <- subset(raw_data, log(Median) >= 2)
 #check to see filtering worked 
 hist(log(median_filt$Median), breaks = 100, xlim = c(0,10))
 
-#applying zero filter, here 36 comes from 0.75*48, i.e. 75% of sample have non-zero values for that gene
+#applying zero filter, here 36 comes from 0.75*48, i.e. 25% of sample have non-zero values for that gene
 final_data <- median_filt[rowSums(median_filt == 0) <=36,]
 
 #creating a metadata sheet with all experimental conditions
