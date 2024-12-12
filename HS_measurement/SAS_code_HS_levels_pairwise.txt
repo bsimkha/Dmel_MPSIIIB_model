@@ -1,0 +1,125 @@
+proc sql;
+%if %sysfunc(exist(WORK.HS_measurement)) %then %do;
+    drop table WORK.HS_measurement;
+%end;
+%if %sysfunc(exist(WORK.HS_measurement,VIEW)) %then %do;
+    drop view WORK.HS_measurement;
+%end;
+quit;
+
+
+
+FILENAME REFFILE FILESRVC FOLDERPATH='/path/to/file'  FILENAME='HS_levels.csv';
+
+PROC IMPORT DATAFILE=REFFILE
+	DBMS=CSV
+	OUT=WORK.HS_measurement;
+	GETNAMES=YES;
+RUN;
+
+PROC CONTENTS DATA=WORK.HS_measurement; RUN;
+
+
+ods noproctitle;
+ods graphics / imagemap=on;
+
+proc sort data=WORK.HS_measurement out=Work.TempDataSorted;
+	by Sex;
+run;
+
+PROC SQL; 
+CREATE TABLE WORK.HS_measurementKO AS
+Select *
+from WORK.TempDataSorted
+where Genotype IN ('WG2','KO');
+
+PROC SQL; 
+CREATE TABLE WORK.HS_measurementY160C AS
+Select *
+from WORK.TempDataSorted
+where Genotype IN ('WG2','Y160C');
+
+PROC SQL; 
+CREATE TABLE WORK.HS_measurementW422X AS
+Select *
+from WORK.TempDataSorted
+where Genotype IN ('WG2','W422X');
+
+/**Full model**/
+ods noproctitle;
+ods graphics / imagemap=on;
+
+proc mixed data=WORK.HS_measurementKO method=type3 
+		plots=(residualPanel) alpha=0.05;
+	class Genotype Sex;
+	model HS_levels=Genotype Sex Genotype*Sex /;
+run;
+
+/**by sex**/
+ods noproctitle;
+ods graphics / imagemap=on;
+
+proc mixed data=Work.HS_measurementKO method=type3 plots=(residualPanel) 
+		alpha=0.05;
+	class Genotype;
+	model HS_levels=Genotype /;
+	by Sex;
+run;
+
+
+
+/**Full model**/
+ods noproctitle;
+ods graphics / imagemap=on;
+
+proc mixed data=WORK.HS_measurementY160C method=type3 
+		plots=(residualPanel) alpha=0.05;
+	class Genotype Sex;
+	model HS_levels=Genotype Sex Genotype*Sex /;
+run;
+
+/**by sex**/
+ods noproctitle;
+ods graphics / imagemap=on;
+
+proc mixed data=Work.HS_measurementY160C method=type3 plots=(residualPanel) 
+		alpha=0.05;
+	class Genotype;
+	model HS_levels=Genotype/;
+	by Sex;
+run;
+
+
+/**Full model**/
+ods noproctitle;
+ods graphics / imagemap=on;
+
+proc mixed data=WORK.HS_measurementW422X method=type3 
+		plots=(residualPanel) alpha=0.05;
+	class Genotype Sex;
+	model HS_levels=Genotype Sex Genotype*Sex/;
+run;
+
+/**by sex**/
+ods noproctitle;
+ods graphics / imagemap=on;
+
+proc mixed data=Work.HS_measurementW422X method=type3 plots=(residualPanel) 
+		alpha=0.05;
+	class Genotype;
+	model HS_levels=Genotype/;
+	by Sex;
+run;
+
+
+proc delete data=Work.HS_measurementKO;
+run;
+
+proc delete data=Work.HS_measurementY160C;
+run;
+
+proc delete data=Work.HS_measurementW422X;
+run;
+
+proc delete data=Work.TempDataSorted;
+run;
