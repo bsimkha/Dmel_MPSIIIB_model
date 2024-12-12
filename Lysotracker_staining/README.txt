@@ -1,19 +1,8 @@
-Directory: Lysotracker_staining
+Directory: Lysotracker Staining
 
 Files
+Brain_samples
+-- Directory containing raw image files, processed files, acquired data and code for analysis of brain images.
 
-Raw_lysotracker_images
--- Contains image files with z-stacks for 20 um sections of fly brains. Refer to Lysotracker_quanitfication_manual.csv for genotype, sex and age.
-
-Final_lysotracker_images
--- Contains image files after fluoroscence was quantified using imageJ.
-
-Lysotracker_quantification_manual.csv
--- Data file containing Genotype, sex and age information for each numbered images. Also contains information on total brain area, particle area and particle counts for fluoroscent puncta.
-
-Lysotracker_graphs.R
--- R file used to generate bargraphs for quantified data.
-
-Lysotracker_SAS_code.txt
--- SAS code used to analyze lysotracker data.
-
+VNC_samples
+-- Directory containing raw image files, processed files, acquired data and code for analysis of VNC images

@@ -1,0 +1,126 @@
+proc sql;
+%if %sysfunc(exist(WORK.lysotracker)) %then %do;
+    drop table WORK.lysotracker;
+%end;
+%if %sysfunc(exist(WORK.lysotracker,VIEW)) %then %do;
+    drop view WORK.lysotracker;
+%end;
+quit;
+
+
+
+FILENAME REFFILE FILESRVC FOLDERPATH='path/to/file'  FILENAME='Lysotracker_quantification_VNC_manual.csv';
+
+PROC IMPORT DATAFILE=REFFILE
+	DBMS=CSV
+	OUT=WORK.lysotracker;
+	GETNAMES=YES;
+RUN;
+
+PROC CONTENTS DATA=WORK.lysotracker; RUN;
+
+
+
+ods noproctitle;
+ods graphics / imagemap=on;
+
+proc sort data=WORK.lysotracker out=Work.TempDataSorted;
+	by Sex;
+run;
+
+PROC SQL; 
+CREATE TABLE WORK.lysotrackerKO AS
+Select *
+from WORK.TempDataSorted
+where Genotype IN ('WG2','KO');
+
+PROC SQL; 
+CREATE TABLE WORK.lysotrackerY160C AS
+Select *
+from WORK.TempDataSorted
+where Genotype IN ('WG2','Y160C');
+
+PROC SQL; 
+CREATE TABLE WORK.lysotrackerW422X AS
+Select *
+from WORK.TempDataSorted
+where Genotype IN ('WG2','W422X');
+
+/**Full model**/
+ods noproctitle;
+ods graphics / imagemap=on;
+
+proc mixed data=WORK.lysotrackerKO method=type3 
+		plots=(residualPanel) alpha=0.05;
+	class Genotype Sex;
+	model Percent_area=Genotype Sex Genotype*Sex /;
+run;
+
+/**by sex**/
+ods noproctitle;
+ods graphics / imagemap=on;
+
+proc mixed data=Work.lysotrackerKO method=type3 plots=(residualPanel) 
+		alpha=0.05;
+	class Genotype;
+	model Percent_area=Genotype /;
+	by Sex;
+run;
+
+
+
+/**Full model**/
+ods noproctitle;
+ods graphics / imagemap=on;
+
+proc mixed data=WORK.lysotrackerY160C method=type3 
+		plots=(residualPanel) alpha=0.05;
+	class Genotype Sex;
+	model Percent_area=Genotype Sex Genotype*Sex /;
+run;
+
+/**by sex**/
+ods noproctitle;
+ods graphics / imagemap=on;
+
+proc mixed data=Work.lysotrackerY160C method=type3 plots=(residualPanel) 
+		alpha=0.05;
+	class Genotype;
+	model Percent_area=Genotype/;
+	by Sex;
+run;
+
+
+/**Full model**/
+ods noproctitle;
+ods graphics / imagemap=on;
+
+proc mixed data=WORK.lysotrackerW422X method=type3 
+		plots=(residualPanel) alpha=0.05;
+	class Genotype Sex;
+	model Percent_area=Genotype Sex Genotype*Sex/;
+run;
+
+/**by sex**/
+ods noproctitle;
+ods graphics / imagemap=on;
+
+proc mixed data=Work.lysotrackerW422X method=type3 plots=(residualPanel) 
+		alpha=0.05;
+	class Genotype;
+	model Percent_area=Genotype/;
+	by Sex;
+run;
+
+
+proc delete data=Work.lysotrackerKO;
+run;
+
+proc delete data=Work.lysotrackerY160C;
+run;
+
+proc delete data=Work.lysotrackerW422X;
+run;
+
+proc delete data=Work.TempDataSorted;
+run;
